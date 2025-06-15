@@ -5,26 +5,31 @@ import openai
 import os
 from dotenv import load_dotenv
 
-# --- PASSWORD FUNCTION (CORRECTED) ---
+# --- PASSWORD FUNCTION (MORE ROBUST VERSION) ---
 
 def check_password():
-    """Returns `True` if the user had the correct password."""
-    
+    """Returns `True` if the user has entered the correct password."""
+
+    # First, check if the password is correct and stored in the session state.
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # If not, show the password form.
     with st.form("password_form"):
         password = st.text_input("Password", type="password")
         submitted = st.form_submit_button("Enter")
-
+        
         if submitted:
-            # The lines below this `if` MUST be indented
-            # NEW WAY FOR DEPLOYMENT
-            if password == st.secrets["CHATBOT_PASSWORD"]: # Make sure to use your actual password here
+            # If the form is submitted, check the password.
+            if password == st.secrets["CHATBOT_PASSWORD"]:
+                # If the password is correct, set the session state and rerun the app.
                 st.session_state["password_correct"] = True
-                st.rerun() # This reloads the page after a correct password
+                st.rerun()
             else:
                 st.error("The password you entered is incorrect.")
-                st.session_state["password_correct"] = False
     
-    return st.session_state.get("password_correct", False)
+    # Return False if the password hasn't been validated yet.
+    return False
 # --- SETUP ---
 # Load environment variables from your .env file
 load_dotenv()
